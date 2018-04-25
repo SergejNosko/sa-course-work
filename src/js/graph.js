@@ -29,13 +29,13 @@ class Graph {
       .attr('cy', (d) => ( d.y ));
   }
 
-  dblclick = (d) => {
-    d3.select(this).classed('fixed', d.fixed = false);
-  }
+  // dblclick = (d) => {
+  //   d3.select(this).classed('fixed', d.fixed = false);
+  // }
 
-  dragstart = (d) => {
-    d3.select(this).classed('fixed', d.fixed = true);
-  }
+  // dragstart = (d) => {
+  //   d3.select(this).classed('fixed', d.fixed = true);
+  // }
 
   restart = (nodes, links, isFirst) => {
     this.force
@@ -50,9 +50,9 @@ class Graph {
     this.nodeTags = this.nodeTags.data(nodes.nodes)
       .enter().append('circle')
         .attr('class', 'node')
-        .attr('r', 12)
-        .on('dblclick', this.dblclick)
-        .call(this.drag);
+        .attr('r', 12);
+        // .on('dblclick', this.dblclick)
+        // .call(this.drag);
     
     if (!isFirst) {
       this.linkTags = this.linkTags.attr('class', 'link_dashed');
