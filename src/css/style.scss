@@ -1,0 +1,22 @@
+.link {
+  stroke: #000;
+  stroke-width: 1.5px;
+
+  &_dashed {
+    stroke: #000;
+    stroke-width: 1.5px;
+    stroke-dasharray: 5,5; 
+ }
+}
+
+.node {
+  cursor: move;
+  fill: #ccc;
+  stroke: #000;
+  stroke-width: 1.5px;
+
+  .fixed {
+    fill: #f00;
+  }
+}
+
