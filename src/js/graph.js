@@ -56,7 +56,7 @@ class Graph {
     
     if (!isFirst) {
       this.linkTags = this.linkTags.attr('class', 'link_dashed');
-      this.tick();
+      //this.tick();
     }
   }
 }

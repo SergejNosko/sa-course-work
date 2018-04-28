@@ -52,30 +52,109 @@ export const isLinkIntersect = (node, link, source, target) => {
   return isIntersect;
 }
 
-export const buildFullGraph = (nodes, links, start, end) => {
-  const node = nodes.nodes;
-  const link = links.links;
+export const buildFullGraph = (node, link, start, end) => {
   const newLinks = [];
-  let foundLink;
   if (start < end) {
     for (let i = start; i < end; i++) {
-      for (let j = start; j < end; j++) {
-        if (i !== j) newLinks.push({ 
-          source: i, 
-          target: j,
-        });
+      for (let j = 0; j < node.length; j++) {
+        if (i !== j) {
+           newLinks.push({
+            source: i, 
+            target: j,
+          });
+        }
       }
     }
   } else {
     for (let i = start - 1; i >= end; i--) {
-      for (let j = start - 1; j >= end; j--) {
-        if (i !== j) newLinks.push({ 
-          source: i, 
-          target: j,
-        });
+      for (let j = node.length - 1; j >= 0; j--) {
+        if (i !== j) {
+          newLinks.push({
+            source: i,
+            target: j,
+          });
+        }
       }
     }
   }
   
   return newLinks;
+}
+
+const findLinksAsync = (node, link, i, j) => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(buildFullGraph(node, link, i, j));
+    }, 100);
+  });
+}
+
+const calculateWayWidth = (node, link) => {
+  return link.reduce((sum, l) => {
+    const sourceNode = node[l.source];
+    const targetNode = node[l.target];
+    const width = Math.sqrt(Math.pow((targetNode.x - sourceNode.x), 2) + Math.pow((targetNode.y - sourceNode.y), 2));
+
+    return sum + width;
+  }, 0);
+}
+
+export const optimize = async (link, node) => {
+  const waysArray = [];
+  let firstPart;
+  let secondPart;
+  let foundLinks;
+
+  for (let i = 0; i < node.length; i++) {
+    const filteredLinks = [];
+    for (let j = 0; j < node.length; j++) {
+      if (i !== j) {
+        if (i === 0) {
+          foundLinks = await findLinksAsync(node, link, i, j + 1);
+        } else if (i === node.length - 1) {
+          foundLinks = await findLinksAsync(node, link, i, 0);
+        } else {
+          firstPart = await findLinksAsync(node, link, i, 0);
+          secondPart = await findLinksAsync(node, link, i, j + 1);
+          foundLinks = [...firstPart, ...secondPart];
+        }
+      }
+    }
+
+    // check for existence and duplication in the source link array
+    foundLinks = foundLinks.filter((l, i) => {
+      const isExist = isLinkExist(link, l.source, l.target);
+      const isIntersect = isLinkIntersect(node, link, l.source, l.target);
+
+      return !isExist && !isIntersect;
+    });
+
+    // check for existence and duplication in the target link array
+    foundLinks.forEach(l => {
+      const isExist = isLinkExist(filteredLinks, l.source, l.target);
+      const isIntersect = isLinkIntersect(node, filteredLinks, l.source, l.target);
+
+      if (!isExist && !isIntersect) {
+        filteredLinks.push({
+          source: l.source,
+          target: l.target,
+        });
+      }
+    });
+
+    waysArray.push(filteredLinks);
+  }
+
+  const optimalWidth = waysArray.map((l, i) => {
+    const width = calculateWayWidth(node, l);
+
+    return {
+      i,
+      width,
+    }
+  }).sort((cur, next) => {
+    return cur.width > next.width ? 1 : -1;
+  });
+
+  return waysArray[optimalWidth[0].i];
 }
